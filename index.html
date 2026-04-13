@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оптичні ілюзії — міст між фізикою та сприйняттям</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0c14;
+            color: #e0d8c8;
+            line-height: 1.7;
+        }
+        
+        /* Анімація появи */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Контейнер */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+        
+        /* Шапка */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, #1a1f30 0%, #0a0c14 100%);
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent 0px,
+                transparent 40px,
+                rgba(201, 168, 76, 0.03) 40px,
+                rgba(201, 168, 76, 0.03) 80px
+            );
+            animation: slowMove 60s linear infinite;
+        }
+        
+        @keyframes slowMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-5%, -5%); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            padding: 40px;
+            animation: fadeUp 1s ease-out;
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 300;
+            letter-spacing: 8px;
+            color: #e6c87c;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 0 0 30px rgba(230, 200, 124, 0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #aab8d0;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+        
+        .hero-quote {
+            font-size: 1.4rem;
+            color: #b0c4de;
+            border-left: 4px solid #c9a84c;
+            padding-left: 30px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #8a90b0;
+            font-size: 14px;
+            animation: fadeIn 2s ease-out;
+            cursor: pointer;
+        }
+        
+        .scroll-hint::after {
+            content: '↓';
+            display: block;
+            font-size: 20px;
+            margin-top: 5px;
+        }
+        
+        /* Секція вступу */
+        .section {
+            padding: 80px 0;
+            animation: fadeUp 0.8s ease-out;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: #e6c87c;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 2px;
+            background: #c9a84c;
+            margin: 20px auto 0;
+        }
+        
+        .intro-text {
+            max-width: 900px;
+            margin: 0 auto 50px;
+            font-size: 1.1rem;
+        }
+        
+        .intro-text p {
+            margin-bottom: 25px;
+        }
+        
+        .highlight {
+            color: #e6c87c;
+            font-weight: 500;
+        }
+        
+        /* Сітка проєктів */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .project-card {
+            background: rgba(20, 24, 38, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #4a5070;
+            border-radius: 24px;
+            padding: 35px 25px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #c9a84c, #e6c87c, #c9a84c);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: #c9a84c;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .project-card:hover::before {
+            opacity: 1;
+        }
+        
+        .project-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .project-card h3 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: #e6c87c;
+            margin-bottom: 15px;
+        }
+        
+        .project-card p {
+            color: #b0b8d0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .project-tag {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 5px 15px;
+            background: rgba(201, 168, 76, 0.15);
+            border: 1px solid rgba(201, 168, 76, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #e6c87c;
+        }
+        
+        /* Секція цитат */
+        .quote-block {
+            background: rgba(15, 18, 30, 0.8);
+            border-radius: 20px;
+            padding: 40px 50px;
+            margin: 50px 0;
+            border: 1px solid #3a4060;
+            text-align: center;
+        }
+        
+        .quote-block p {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #c8d0e0;
+        }
+        
+        .quote-author {
+            margin-top: 20px;
+            color: #8a90b0;
+        }
+        
+        /* Футер */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid #2a3045;
+            margin-top: 60px;
+            color: #6a7090;
+            font-size: 0.9rem;
+        }
+        
+        /* Адаптивність */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .hero-quote {
+                font-size: 1.1rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Головний екран -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Оптичні ілюзії</h1>
+            <div class="hero-subtitle">Міст між фізикою, психологією та мистецтвом</div>
+            <div class="hero-quote">
+                "У дослідженні розглянуто фізичні та психологічні аспекти оптичних ілюзій, 
+                які відіграють важливу роль у нашому розумінні сприйняття та реальності."
+            </div>
+        </div>
+        <div class="scroll-hint" onclick="document.getElementById('intro').scrollIntoView({behavior: 'smooth'})">
+            Дослідити
+        </div>
+    </section>
+
+    <!-- Вступ -->
+    <section id="intro" class="section">
+        <div class="container">
+            <h2 class="section-title">Вступ</h2>
+            <div class="intro-text">
+                <p>Значення світла та зорового сприйняття у житті людини важко переоцінити. 
+                Завдяки зору ми отримуємо більшість інформації про навколишній світ, а оптичні явища, 
+                як-от світло і тінь, кольори й перспективи, безпосередньо впливають на наше розуміння 
+                реальності. <span class="highlight">Світло — це електромагнітне випромінювання</span>, яке, проходячи через 
+                оптичну систему ока, формує зображення на сітківці.</p>
+                
+                <p>Проте це сприйняття далеко не завжди відповідає дійсності. У певних обставинах 
+                мозок, обробляючи сигнали, може створювати помилкові враження, які називаються 
+                зоровими ілюзіями. Ці явища демонструють, що сприйняття залежить не лише від 
+                фізичних властивостей світла та об'єктів, а й від <span class="highlight">когнітивних процесів мозку</span>.</p>
+                
+                <p>Розбіжність між тим, що ми бачимо, і тим, що існує насправді, часто використовується у 
+                мистецтві, архітектурі, науці й повсякденному житті, створюючи унікальні оптичні 
+                ефекти. Робота спрямована на поглиблення розуміння взаємозв'язку між фізикою світла, 
+                особливостями зорової системи та культурними аспектами використання ілюзій.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Проєкти -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Інтерактивні демонстрації</h2>
+            <div class="intro-text" style="text-align: center;">
+                <p>Чотири проєкти, які наочно демонструють різні аспекти оптичних ілюзій — 
+                від геометричних спотворень до кольорових і рухових феноменів.</p>
+            </div>
+            
+            <div class="projects-grid">
+                <!-- Картка 1: Анаморфна перспектива -->
+                <a href="anamorphic.html" class="project-card">
+                    <div class="project-icon">🔄</div>
+                    <h3>Анаморфна перспектива</h3>
+                    <p>Дослідження того, як зворотна проєкція змінює наше сприйняття форми. 
+                    Об'єкт виглядає нормальним лише з однієї точки — з усіх інших він спотворений.</p>
+                    <span class="project-tag">Геометрична ілюзія</span>
+                </a>
+                
+                <!-- Картка 2: Супутники Галілея -->
+                <a href="galilean-moons.html" class="project-card">
+                    <div class="project-icon">🌌</div>
+                    <h3>Супутники Галілея</h3>
+                    <p>Як коловий рух у проєкції стає синусоїдою. Дві математичні моделі — 
+                    орбіти та пружини — описують одне й те саме явище.</p>
+                    <span class="project-tag">Математична модель</span>
+                </a>
+                
+                <!-- Картка 3: Колірне коло -->
+                <a href="color-wheel.html" class="project-card">
+                    <div class="project-icon">🎨</div>
+                    <h3>Колірне коло</h3>
+                    <p>Адитивний (RGB) та субтрактивний (CMYK) синтез кольору. 
+                    Дослідження колірних гармоній та того, як контекст впливає на сприйняття.</p>
+                    <span class="project-tag">Кольорова ілюзія</span>
+                </a>
+                
+                <!-- Картка 4: Оптичні ілюзії -->
+                <a href="optical-illusions.html" class="project-card">
+                    <div class="project-icon">👁️</div>
+                    <h3>Класичні ілюзії</h3>
+                    <p>Ілюзія тіні Адельсона, Мюллера-Лаєра та периферійний рух. 
+                    Інтерактивні демонстрації того, як мозок "добудовує" реальність.</p>
+                    <span class="project-tag">Психологічна ілюзія</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Мета дослідження -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Мета дослідження</h2>
+            <div class="intro-text">
+                <p>Метою даного дослідження є аналіз механізмів виникнення оптичних ілюзій, їхніх 
+                фізичних та психологічних основ, а також впливу на нашу взаємодію зі світом. 
+                <span class="highlight">Особливу увагу приділено тому, як зорові ілюзії використовуються у мистецтві</span> 
+                для створення враження глибини, форми та простору.</p>
+                
+                <p>У роботі проаналізовано, як оптичні ілюзії базуються на фізичних законах 
+                світла та його взаємодії з матерією, а також на особливостях функціонування 
+                людського мозку. <span class="highlight">Ілюзії є своєрідним мостом між наукою і творчістю</span>, що 
+                відкриває нові горизонти у розумінні не лише фізики, а й нас самих.</p>
+            </div>
+            
+            <div class="quote-block">
+                <p>"Робота спрямована на виявлення механізмів, що стоять за виникненням 
+                ілюзій, та їхній вплив на людське сприйняття простору, кольору й форми."</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Висновки -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Висновки</h2>
+            <div class="intro-text">
+                <p>Проведене дослідження демонструє, що оптичні ілюзії — це не просто "помилки" 
+                сприйняття, а <span class="highlight">фундаментальне вікно в роботу людського мозку</span>. Вони показують, 
+                що наше бачення реальності є активною конструкцією, а не пасивним відображенням.</p>
+                
+                <p>Ключові висновки дослідження:</p>
+                <ul style="margin: 25px 0 25px 40px; color: #b0b8d0;">
+                    <li style="margin-bottom: 12px;"><span class="highlight">Геометричні ілюзії</span> (анаморфоз, Мюллер-Лаєр) доводять, що мозок використовує контекст і попередній досвід для інтерпретації форми та розміру.</li>
+                    <li style="margin-bottom: 12px;"><span class="highlight">Математичні моделі</span> (супутники Галілея) показують, що одне фізичне явище може мати кілька еквівалентних описів — реальність залежить від точки зору.</li>
+                    <li style="margin-bottom: 12px;"><span class="highlight">Колірне сприйняття</span> демонструє, що колір не є абсолютною властивістю об'єкта, а результатом складної обробки сигналів мозком.</li>
+                    <li style="margin-bottom: 12px;"><span class="highlight">Рухові ілюзії</span> виявляють, як периферійний зір і контраст створюють відчуття руху там, де його немає.</li>
+                </ul>
+                
+                <p>Дослідження підтверджує, що ілюзії кидають виклик нашим уявленням про реальність 
+                і відкривають нові способи взаємодії зі світом. Вони активно використовуються в 
+                мистецтві (від анаморфних фресок до оп-арту), в архітектурі (створення ілюзії 
+                простору), в дизайні та навіть у військовій справі (камуфляж).</p>
+                
+                <p style="margin-top: 30px;"><span class="highlight">Фізика світла</span> дає нам об'єктивний опис реальності. 
+                <span class="highlight">Психологія сприйняття</span> показує, як ця реальність трансформується у свідомості. 
+                А <span class="highlight">мистецтво</span> використовує цей розрив для створення нових сенсів. 
+                Саме на перетині цих трьох сфер народжується глибше розуміння того, 
+                що означає "бачити".</p>
+            </div>
+            
+            <div class="quote-block">
+                <p>"Метою роботи було не лише пояснення фізичних принципів, що стоять за 
+                оптичними ілюзіями, а й формування глибшого усвідомлення ролі фізики в 
+                нашому житті."</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- П'ята сторінка — посилання на окремий файл висновків -->
+    <section class="section">
+        <div class="container">
+            <div style="text-align: center; padding: 40px;">
+                <a href="conclusion.html" style="
+                    display: inline-block;
+                    background: rgba(201, 168, 76, 0.15);
+                    border: 2px solid #c9a84c;
+                    color: #e6c87c;
+                    padding: 18px 45px;
+                    border-radius: 50px;
+                    font-size: 1.2rem;
+                    text-decoration: none;
+                    transition: all 0.3s;
+                    letter-spacing: 2px;
+                " onmouseover="this.style.background='rgba(201, 168, 76, 0.3)'" 
+                   onmouseout="this.style.background='rgba(201, 168, 76, 0.15)'">
+                    📄 Детальні висновки дослідження
+                </a>
+                <p style="margin-top: 25px; color: #8a90b0;">Окрема сторінка з розширеним аналізом та підсумками</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <p>Дослідження базується на аналізі наукових праць, а також прикладах із мистецтва, науки та історії.</p>
+            <p style="margin-top: 15px;">© 2024 • Оптичні ілюзії — міст між наукою і творчістю</p>
+        </div>
+    </footer>
+</body>
+</html>

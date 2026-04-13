@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Колірне коло — Гармонія та синтез</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a14 0%, #141428 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0d8c8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #main-container {
+            max-width: 1400px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        /* --- Інформаційна панель (згортається) --- */
+        #info-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 460px;
+            transform: translateX(-440px);
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #info-panel.open {
+            transform: translateX(0);
+        }
+        
+        #info-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 420px;
+            background: rgba(8, 10, 20, 0.94);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid #5a6080;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+            padding: 30px 25px;
+            overflow-y: auto;
+            pointer-events: auto;
+            color: #e8e0d0;
+            line-height: 1.7;
+            box-sizing: border-box;
+        }
+        
+        #info-content h2 {
+            margin: 0 0 20px;
+            color: #e6c87c;
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-size: 24px;
+            border-bottom: 1px solid #4a5070;
+            padding-bottom: 15px;
+        }
+        
+        #info-content h3 {
+            margin: 25px 0 12px;
+            color: #b8c8e0;
+            font-weight: 400;
+            font-size: 16px;
+        }
+        
+        #info-content p {
+            margin: 10px 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        #info-content .highlight {
+            color: #e6c87c;
+            font-weight: 600;
+        }
+        
+        #info-content .quote {
+            font-style: italic;
+            color: #b0c4de;
+            border-left: 3px solid #c9a84c;
+            padding-left: 18px;
+            margin: 18px 0;
+        }
+        
+        #info-tab {
+            position: absolute;
+            top: 50%;
+            right: -40px;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 140px;
+            background: rgba(8, 10, 20, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid #5a6080;
+            border-left: none;
+            border-radius: 0 14px 14px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            color: #e6c87c;
+            font-size: 16px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 5px;
+            transition: 0.2s;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        #info-tab:hover {
+            background: rgba(30, 35, 55, 0.95);
+            color: #f0d48c;
+        }
+        
+        /* --- Основний контент --- */
+        #wheel-section {
+            background: rgba(15, 18, 30, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 30px 40px;
+            border: 1px solid #4a5070;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        
+        #canvas-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+        
+        canvas {
+            display: block;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            cursor: crosshair;
+        }
+        
+        #color-info {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        #selected-color-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        #color-preview {
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            border: 2px solid #6a7090;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transition: background 0.1s;
+        }
+        
+        #color-values {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid #4a5070;
+        }
+        
+        #color-values div {
+            margin: 4px 0;
+        }
+        
+        #harmony-panel {
+            background: rgba(20, 24, 40, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 25px 30px;
+            border: 1px solid #5a6080;
+            min-width: 260px;
+        }
+        
+        #harmony-title {
+            color: #b8c8e0;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        
+        #harmony-swatches {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .harmony-swatch {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            border: 2px solid #6a7090;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .harmony-swatch:hover {
+            transform: scale(1.08);
+            border-color: #c9a84c;
+        }
+        
+        #harmony-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .harmony-btn {
+            background: #2a3045;
+            color: #ddd;
+            border: 1px solid #5a6080;
+            padding: 8px 14px;
+            border-radius: 25px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+        
+        .harmony-btn:hover {
+            background: #3a4060;
+            color: white;
+        }
+        
+        .harmony-btn.active {
+            background: #c9a84c;
+            color: #111;
+            border-color: #e6c87c;
+        }
+        
+        #mode-toggle {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            background: #1a1e30;
+            border: 1px solid #4a5070;
+            color: #aab;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        
+        .mode-btn.active {
+            background: #3a5080;
+            color: white;
+            border-color: #7a90c0;
+        }
+        
+        #sliders {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .slider-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider-item label {
+            width: 80px;
+            color: #b8c8e0;
+            font-size: 13px;
+        }
+        
+        .slider-item input {
+            flex: 1;
+            height: 5px;
+            border-radius: 5px;
+            background: #2a3045;
+            accent-color: #c9a84c;
+        }
+        
+        .slider-item span {
+            width: 45px;
+            font-family: monospace;
+            color: #e6c87c;
+        }
+        
+        #footer-note {
+            margin-top: 20px;
+            text-align: center;
+            color: #7a80a0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Інформаційна панель -->
+    <div id="info-panel">
+        <div id="info-content">
+            <h2>Колірне коло</h2>
+            <p>Колірне коло — це спосіб організації кольорів у вигляді спектра, замкненого в коло. Воно показує <span class="highlight">взаємозв'язки між кольорами</span> та допомагає створювати гармонійні поєднання.</p>
+            <h3>Адитивний синтез (RGB)</h3>
+            <p>Використовується в екранах, світлі. <span class="highlight">Червоний + Зелений + Синій = Білий</span>. Чим більше світла — тим світліший колір.</p>
+            <h3>Субтрактивний синтез (CMYK)</h3>
+            <p>Використовується в друці, фарбах. <span class="highlight">Блакитний + Пурпурний + Жовтий = Чорний</span>. Чим більше фарби — тим темніший колір.</p>
+            <h3>Колірні гармонії</h3>
+            <p><span class="highlight">Комплементарні</span> — протилежні на колі (напр. червоний/зелений).<br>
+            <span class="highlight">Аналогові</span> — сусідні кольори (м'які переходи).<br>
+            <span class="highlight">Тріадні</span> — три рівновіддалені кольори (яскравий контраст).<br>
+            <span class="highlight">Тетрадні</span> — дві пари комплементарних (багата палітра).<br>
+            <span class="highlight">Монохромні</span> — відтінки одного кольору.</p>
+            <p class="quote">"Колір — це клавіатура, очі — молоточки, а душа — фортепіано з багатьма струнами." — Василь Кандинський</p>
+            <p style="margin-top: 20px; font-size: 13px; opacity: 0.7;">Натисніть на коло — виберіть колір. Повзунки регулюють яскравість/насиченість.</p>
+        </div>
+        <div id="info-tab">Т Е О Р І Я</div>
+    </div>
+
+    <div id="main-container">
+        <div id="wheel-section">
+            <div id="mode-toggle">
+                <button id="mode-rgb" class="mode-btn active">RGB (адитивний)</button>
+                <button id="mode-cmyk" class="mode-btn">CMYK (субтрактивний)</button>
+            </div>
+            <div id="canvas-container">
+                <canvas id="color-wheel" width="500" height="500"></canvas>
+            </div>
+            <div id="color-info">
+                <div id="selected-color-display">
+                    <div id="color-preview" style="background: #ff4d4d;"></div>
+                    <div id="color-values">
+                        <div>RGB: <span id="rgb-value">255, 77, 77</span></div>
+                        <div>HEX: <span id="hex-value">#FF4D4D</span></div>
+                        <div>HSL: <span id="hsl-value">0°, 100%, 65%</span></div>
+                    </div>
+                </div>
+                <div id="harmony-panel">
+                    <div id="harmony-title">Гармонія: <span id="harmony-name">Комплементарна</span></div>
+                    <div id="harmony-swatches"></div>
+                    <div id="harmony-buttons">
+                        <button class="harmony-btn active" data-harmony="complementary">Комплементарні</button>
+                        <button class="harmony-btn" data-harmony="analogous">Аналогові</button>
+                        <button class="harmony-btn" data-harmony="triadic">Тріадні</button>
+                        <button class="harmony-btn" data-harmony="tetradic">Тетрадні</button>
+                        <button class="harmony-btn" data-harmony="monochromatic">Монохромні</button>
+                    </div>
+                </div>
+            </div>
+            <div id="sliders">
+                <div class="slider-item">
+                    <label>Яскравість</label>
+                    <input type="range" id="brightness-slider" min="0" max="100" value="65">
+                    <span id="brightness-value">65%</span>
+                </div>
+                <div class="slider-item">
+                    <label>Насиченість</label>
+                    <input type="range" id="saturation-slider" min="0" max="100" value="100">
+                    <span id="saturation-value">100%</span>
+                </div>
+            </div>
+            <div id="footer-note">
+                Натисніть на коло або зразок — колір скопійовано в основний
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // --- Елементи DOM ---
+            const canvas = document.getElementById('color-wheel');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const rgbModeBtn = document.getElementById('mode-rgb');
+            const cmykModeBtn = document.getElementById('mode-cmyk');
+            const colorPreview = document.getElementById('color-preview');
+            const rgbSpan = document.getElementById('rgb-value');
+            const hexSpan = document.getElementById('hex-value');
+            const hslSpan = document.getElementById('hsl-value');
+            const brightnessSlider = document.getElementById('brightness-slider');
+            const saturationSlider = document.getElementById('saturation-slider');
+            const brightnessValue = document.getElementById('brightness-value');
+            const saturationValue = document.getElementById('saturation-value');
+            const harmonySwatches = document.getElementById('harmony-swatches');
+            const harmonyNameSpan = document.getElementById('harmony-name');
+            const harmonyBtns = document.querySelectorAll('.harmony-btn');
+            
+            // --- Стан ---
+            let mode = 'rgb'; // 'rgb' або 'cmyk'
+            let currentHue = 0;
+            let currentSaturation = 100;
+            let currentLightness = 65;
+            let currentHarmony = 'complementary';
+            
+            const harmonyNames = {
+                complementary: 'Комплементарна',
+                analogus: 'Аналогова',
+                triadic: 'Тріадна',
+                tetradic: 'Тетрадна',
+                monochromatic: 'Монохромна'
+            };
+            
+            // --- Допоміжні функції кольору ---
+            function hslToRgb(h, s, l) {
+                h /= 360;
+                s /= 100;
+                l /= 100;
+                let r, g, b;
+                if (s === 0) {
+                    r = g = b = l;
+                } else {
+                    const hue2rgb = (p, q, t) => {
+                        if (t < 0) t += 1;
+                        if (t > 1) t -= 1;
+                        if (t < 1/6) return p + (q - p) * 6 * t;
+                        if (t < 1/2) return q;
+                        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    };
+                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    const p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1/3);
+                }
+                return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+            }
+            
+            function rgbToHsl(r, g, b) {
+                r /= 255; g /= 255; b /= 255;
+                const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                if (max === min) {
+                    h = s = 0;
+                } else {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+            }
+            
+            function rgbToHex(r, g, b) {
+                return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0').toUpperCase()).join('');
+            }
+            
+            function getColorAtPixel(x, y) {
+                const pixel = ctx.getImageData(x, y, 1, 1).data;
+                return [pixel[0], pixel[1], pixel[2]];
+            }
+            
+            // --- Малювання кола ---
+            function drawWheel() {
+                const w = canvas.width, h = canvas.height;
+                const centerX = w/2, centerY = h/2;
+                const radius = Math.min(w, h) * 0.42;
+                
+                const imageData = ctx.createImageData(w, h);
+                const data = imageData.data;
+                
+                for (let py = 0; py < h; py++) {
+                    for (let px = 0; px < w; px++) {
+                        const dx = px - centerX;
+                        const dy = py - centerY;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        let r, g, b;
+                        
+                        if (dist <= radius) {
+                            // Кут (відтінок)
+                            let angle = Math.atan2(dy, dx);
+                            if (angle < 0) angle += 2 * Math.PI;
+                            const hue = (angle * 180 / Math.PI) % 360;
+                            
+                            // Насиченість (відстань від центру)
+                            const saturation = (dist / radius) * 100;
+                            
+                            // Яскравість фіксована для чистого кола (потім регулюється)
+                            let lightness = 60;
+                            
+                            if (mode === 'rgb') {
+                                [r, g, b] = hslToRgb(hue, saturation, lightness);
+                            } else {
+                                // CMYK: інверсія логіки
+                                const cmykSaturation = 100 - saturation;
+                                [r, g, b] = hslToRgb(hue, cmykSaturation, lightness);
+                                // Інвертуємо для субтрактивного ефекту
+                                r = 255 - r;
+                                g = 255 - g;
+                                b = 255 - b;
+                            }
+                        } else {
+                            // Темний фон за межами кола
+                            r = 20; g = 20; b = 30;
+                        }
+                        
+                        const idx = (py * w + px) * 4;
+                        data[idx] = r;
+                        data[idx+1] = g;
+                        data[idx+2] = b;
+                        data[idx+3] = 255;
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                // Малюємо маркер вибраного кольору
+                const markerAngle = (currentHue * Math.PI) / 180;
+                const markerDist = radius * (currentSaturation / 100);
+                const markerX = centerX + Math.cos(markerAngle) * markerDist;
+                const markerY = centerY + Math.sin(markerAngle) * markerDist;
+                
+                ctx.beginPath();
+                ctx.arc(markerX, markerY, 8, 0, 2*Math.PI);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(markerX, markerY, 5, 0, 2*Math.PI);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // --- Оновлення UI кольору ---
+            function updateColorDisplay(hue, sat, light) {
+                const [r, g, b] = hslToRgb(hue, sat, light);
+                const hex = rgbToHex(r, g, b);
+                
+                colorPreview.style.backgroundColor = hex;
+                rgbSpan.textContent = `${r}, ${g}, ${b}`;
+                hexSpan.textContent = hex;
+                hslSpan.textContent = `${hue}°, ${sat}%, ${light}%`;
+                
+                brightnessSlider.value = light;
+                saturationSlider.value = sat;
+                brightnessValue.textContent = light + '%';
+                saturationValue.textContent = sat + '%';
+                
+                currentHue = hue;
+                currentSaturation = sat;
+                currentLightness = light;
+                
+                drawWheel();
+                updateHarmonySwatches();
+            }
+            
+            // --- Гармонії ---
+            function getHarmonyColors(hue) {
+                const colors = [];
+                const sat = currentSaturation;
+                const light = currentLightness;
+                
+                switch(currentHarmony) {
+                    case 'complementary':
+                        colors.push(hue, (hue + 180) % 360);
+                        break;
+                    case 'analogous':
+                        colors.push((hue - 30 + 360) % 360, hue, (hue + 30) % 360);
+                        break;
+                    case 'triadic':
+                        colors.push(hue, (hue + 120) % 360, (hue + 240) % 360);
+                        break;
+                    case 'tetradic':
+                        colors.push(hue, (hue + 90) % 360, (hue + 180) % 360, (hue + 270) % 360);
+                        break;
+                    case 'monochromatic':
+                        colors.push(hue, hue, hue, hue, hue);
+                        break;
+                }
+                
+                return colors.map(h => {
+                    if (currentHarmony === 'monochromatic') {
+                        // Варіації яскравості
+                        return { h, s: sat, l: light };
+                    }
+                    return { h, s: sat, l: light };
+                });
+            }
+            
+            function updateHarmonySwatches() {
+                const colors = getHarmonyColors(currentHue);
+                harmonySwatches.innerHTML = '';
+                
+                colors.forEach((c, i) => {
+                    let l = c.l;
+                    if (currentHarmony === 'monochromatic') {
+                        const variations = [85, 70, 55, 40, 25];
+                        l = variations[i % variations.length];
+                    }
+                    const [r, g, b] = hslToRgb(c.h, c.s, l);
+                    const hex = rgbToHex(r, g, b);
+                    
+                    const swatch = document.createElement('div');
+                    swatch.className = 'harmony-swatch';
+                    swatch.style.backgroundColor = hex;
+                    swatch.addEventListener('click', () => {
+                        updateColorDisplay(c.h, c.s, l);
+                    });
+                    harmonySwatches.appendChild(swatch);
+                });
+            }
+            
+            // --- Обробники подій ---
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                
+                const centerX = canvas.width/2, centerY = canvas.height/2;
+                const dx = x - centerX, dy = y - centerY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const radius = Math.min(canvas.width, canvas.height) * 0.42;
+                
+                if (dist <= radius) {
+                    let angle = Math.atan2(dy, dx);
+                    if (angle < 0) angle += 2*Math.PI;
+                    const hue = Math.round(angle * 180 / Math.PI);
+                    const sat = Math.min(100, Math.round((dist / radius) * 100));
+                    
+                    updateColorDisplay(hue, sat, currentLightness);
+                }
+            });
+            
+            brightnessSlider.addEventListener('input', () => {
+                updateColorDisplay(currentHue, currentSaturation, parseInt(brightnessSlider.value));
+            });
+            
+            saturationSlider.addEventListener('input', () => {
+                updateColorDisplay(currentHue, parseInt(saturationSlider.value), currentLightness);
+            });
+            
+            rgbModeBtn.addEventListener('click', () => {
+                mode = 'rgb';
+                rgbModeBtn.classList.add('active');
+                cmykModeBtn.classList.remove('active');
+                drawWheel();
+            });
+            
+            cmykModeBtn.addEventListener('click', () => {
+                mode = 'cmyk';
+                cmykModeBtn.classList.add('active');
+                rgbModeBtn.classList.remove('active');
+                drawWheel();
+            });
+            
+            harmonyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    harmonyBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentHarmony = btn.dataset.harmony;
+                    harmonyNameSpan.textContent = harmonyNames[currentHarmony];
+                    updateHarmonySwatches();
+                });
+            });
+            
+            // Інфо-панель
+            document.getElementById('info-tab').addEventListener('click', () => {
+                document.getElementById('info-panel').classList.toggle('open');
+            });
+            
+            // Ініціалізація
+            drawWheel();
+            updateColorDisplay(0, 100, 65);
+            harmonyNameSpan.textContent = harmonyNames.complementary;
+        })();
+    </script>
+</body>
+</html>

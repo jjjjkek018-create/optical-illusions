@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оптичні ілюзії — Коли око обманює розум</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0e18 0%, #121624 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0d8c8;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        /* Інформаційна панель */
+        #info-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 460px;
+            transform: translateX(-440px);
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #info-panel.open {
+            transform: translateX(0);
+        }
+        
+        #info-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 420px;
+            background: rgba(8, 10, 20, 0.94);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid #5a6080;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+            padding: 30px 25px;
+            overflow-y: auto;
+            pointer-events: auto;
+            color: #e8e0d0;
+            line-height: 1.7;
+            box-sizing: border-box;
+        }
+        
+        #info-content h2 {
+            margin: 0 0 20px;
+            color: #e6c87c;
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-size: 24px;
+            border-bottom: 1px solid #4a5070;
+            padding-bottom: 15px;
+        }
+        
+        #info-content h3 {
+            margin: 25px 0 12px;
+            color: #b8c8e0;
+            font-weight: 400;
+            font-size: 16px;
+        }
+        
+        #info-content p {
+            margin: 10px 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        #info-content .highlight {
+            color: #e6c87c;
+            font-weight: 600;
+        }
+        
+        #info-content .quote {
+            font-style: italic;
+            color: #b0c4de;
+            border-left: 3px solid #c9a84c;
+            padding-left: 18px;
+            margin: 18px 0;
+        }
+        
+        #info-tab {
+            position: absolute;
+            top: 50%;
+            right: -40px;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 140px;
+            background: rgba(8, 10, 20, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid #5a6080;
+            border-left: none;
+            border-radius: 0 14px 14px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            color: #e6c87c;
+            font-size: 16px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 5px;
+            transition: 0.2s;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        #info-tab:hover {
+            background: rgba(30, 35, 55, 0.95);
+            color: #f0d48c;
+        }
+        
+        #main-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #main-title h1 {
+            color: #e6c87c;
+            font-weight: 300;
+            font-size: 36px;
+            letter-spacing: 6px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        
+        #main-title p {
+            color: #8a90b0;
+            font-size: 16px;
+            margin: 8px 0 0;
+        }
+        
+        #illusions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .illusion-card {
+            background: rgba(15, 18, 30, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 25px;
+            border: 1px solid #4a5070;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            transition: transform 0.2s;
+        }
+        
+        .illusion-card:hover {
+            transform: translateY(-5px);
+            border-color: #6a7090;
+        }
+        
+        .illusion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .illusion-header h3 {
+            margin: 0;
+            color: #b8c8e0;
+            font-weight: 400;
+            font-size: 20px;
+        }
+        
+        .illusion-controls button {
+            background: #2a3045;
+            color: #ccd;
+            border: 1px solid #5a6080;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .illusion-controls button:hover {
+            background: #3a4060;
+            color: white;
+        }
+        
+        .illusion-canvas-container {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .illusion-canvas {
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .illusion-description {
+            margin-top: 15px;
+            color: #aab;
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+            border-top: 1px solid #3a4060;
+            padding-top: 12px;
+        }
+        
+        .slider-container {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .slider-container label {
+            color: #b8c8e0;
+            font-size: 12px;
+            min-width: 80px;
+        }
+        
+        .slider-container input {
+            flex: 1;
+            height: 4px;
+            border-radius: 4px;
+            background: #2a3045;
+            accent-color: #c9a84c;
+        }
+        
+        .slider-container span {
+            min-width: 45px;
+            font-family: monospace;
+            color: #e6c87c;
+            font-size: 12px;
+        }
+        
+        .static-note {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #8a90b0;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        #footer-note {
+            margin-top: 40px;
+            text-align: center;
+            color: #6a7090;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Інформаційна панель -->
+    <div id="info-panel">
+        <div id="info-content">
+            <h2>Оптичні ілюзії</h2>
+            <p>Оптичні ілюзії — це спотворення сприйняття, коли <span class="highlight">мозок інтерпретує візуальну інформацію не так, як вона існує насправді</span>. Вони демонструють розрив між фізичною реальністю та її суб'єктивним сприйняттям.</p>
+            
+            <h3>Ілюзія тіні Адельсона</h3>
+            <p>Квадрати A і B мають <span class="highlight">абсолютно однаковий колір</span>. Але через те, що B знаходиться "в тіні", мозок автоматично компенсує освітлення і сприймає його як світліший. Це демонструє, що ми бачимо не абсолютні кольори, а <span class="highlight">відносну яскравість у контексті</span>.</p>
+            
+            <h3>Ілюзія Мюллера-Лаєра</h3>
+            <p>Дві лінії <span class="highlight">однакової довжини</span>. Стрілки назовні роблять лінію візуально довшою, стрілки всередину — коротшою. Мозок інтерпретує стрілки як кути кімнати: назовні = дальній кут (більша відстань), всередину = ближній кут.</p>
+            
+            <h3>Периферійний рух</h3>
+            <p><span class="highlight">Це статичне зображення.</span> Воно не рухається. Але коли ви дивитеся в центр, периферійний зір фіксує контрастні переходи, і мозок інтерпретує їх як рух. Це пов'язано з тим, як нейрони зорової кори реагують на зміну контрасту.</p>
+            
+            <p class="quote">"Ми бачимо не речі такими, якими вони є, а такими, якими є ми." — Анаїс Нін</p>
+        </div>
+        <div id="info-tab">Т Е О Р І Я</div>
+    </div>
+
+    <div id="main-title">
+        <h1>Оптичні ілюзії</h1>
+        <p>Коли реальність — лише інтерпретація</p>
+    </div>
+
+    <div id="illusions-grid">
+        <!-- Ілюзія 1: Адельсона -->
+        <div class="illusion-card">
+            <div class="illusion-header">
+                <h3>Ілюзія тіні Адельсона</h3>
+                <div class="illusion-controls">
+                    <button class="toggle-shadow-btn">Сховати тінь</button>
+                </div>
+            </div>
+            <div class="illusion-canvas-container">
+                <canvas id="adelson-canvas" class="illusion-canvas" width="400" height="280"></canvas>
+            </div>
+            <div class="illusion-description">
+                Квадрати A і B мають однаковий колір (#787878). Тінь і шаховий візерунок змушують мозок "компенсувати" освітлення.
+            </div>
+        </div>
+
+        <!-- Ілюзія 2: Мюллера-Лаєра -->
+        <div class="illusion-card">
+            <div class="illusion-header">
+                <h3>Ілюзія Мюллера-Лаєра</h3>
+                <div class="illusion-controls">
+                    <button class="reset-muller-btn">Скинути</button>
+                </div>
+            </div>
+            <div class="illusion-canvas-container">
+                <canvas id="muller-canvas" class="illusion-canvas" width="400" height="250"></canvas>
+            </div>
+            <div class="slider-container">
+                <label>Кут стрілок</label>
+                <input type="range" id="muller-angle" min="15" max="75" value="45">
+                <span id="muller-angle-value">45°</span>
+            </div>
+            <div class="illusion-description">
+                Верхня та нижня лінії однакової довжини. Стрілки назовні візуально видовжують, всередину — вкорочують.
+            </div>
+        </div>
+
+        <!-- Ілюзія 3: Рухома -->
+        <div class="illusion-card">
+            <div class="illusion-header">
+                <h3>Периферійний рух</h3>
+                <div class="illusion-controls">
+                    <button class="toggle-motion-btn">Пауза</button>
+                </div>
+            </div>
+            <div class="illusion-canvas-container">
+                <canvas id="motion-canvas" class="illusion-canvas" width="400" height="300"></canvas>
+            </div>
+            <div class="slider-container">
+                <label>Контраст</label>
+                <input type="range" id="motion-contrast" min="20" max="80" value="50">
+                <span id="motion-contrast-value">50%</span>
+            </div>
+            <div class="static-note">
+                ⚡ Це статичне зображення. Воно не рухається. ⚡<br>
+                Дивіться на червону крапку — ілюзія посилюється.
+            </div>
+            <div class="illusion-description">
+                Периферійний зір сприймає контрастні переходи як рух. Спробуйте дивитися прямо в центр.
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-note">
+        Кожна ілюзія — це вікно в те, як наш мозок конструює реальність
+    </div>
+
+    <script>
+        (function() {
+            // ========== ІЛЮЗІЯ АДЕЛЬСОНА ==========
+            const adelsonCanvas = document.getElementById('adelson-canvas');
+            const adelsonCtx = adelsonCanvas.getContext('2d');
+            let adelsonShowShadow = true;
+            
+            function drawAdelson() {
+                const w = 400, h = 280;
+                adelsonCanvas.width = w; adelsonCanvas.height = h;
+                
+                const squareSize = 40;
+                const offsetX = 40, offsetY = 30;
+                
+                // Кольори шахової дошки
+                const darkSquare = '#686868';
+                const lightSquare = '#b8b8b8';
+                
+                // Шахова дошка
+                for (let row = 0; row < 5; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const isDark = (row + col) % 2 === 0;
+                        adelsonCtx.fillStyle = isDark ? darkSquare : lightSquare;
+                        adelsonCtx.fillRect(offsetX + col * squareSize, offsetY + row * squareSize, squareSize, squareSize);
+                    }
+                }
+                
+                // Квадрат A (темна клітинка поза тінню)
+                adelsonCtx.fillStyle = darkSquare;
+                adelsonCtx.fillRect(offsetX + 2 * squareSize, offsetY + 2 * squareSize, squareSize, squareSize);
+                adelsonCtx.strokeStyle = '#ff5555';
+                adelsonCtx.lineWidth = 2.5;
+                adelsonCtx.strokeRect(offsetX + 2 * squareSize, offsetY + 2 * squareSize, squareSize, squareSize);
+                adelsonCtx.fillStyle = '#ff5555';
+                adelsonCtx.font = 'bold 16px Arial';
+                adelsonCtx.fillText('A', offsetX + 2 * squareSize + 12, offsetY + 2 * squareSize + 28);
+                
+                // Квадрат B (світла клітинка в тіні) — але малюємо ТИМ САМИМ кольором що й A!
+                adelsonCtx.fillStyle = darkSquare; // Той самий колір!
+                adelsonCtx.fillRect(offsetX + 4 * squareSize, offsetY + 3 * squareSize, squareSize, squareSize);
+                adelsonCtx.strokeStyle = '#5555ff';
+                adelsonCtx.lineWidth = 2.5;
+                adelsonCtx.strokeRect(offsetX + 4 * squareSize, offsetY + 3 * squareSize, squareSize, squareSize);
+                adelsonCtx.fillStyle = '#5555ff';
+                adelsonCtx.fillText('B', offsetX + 4 * squareSize + 12, offsetY + 3 * squareSize + 28);
+                
+                if (adelsonShowShadow) {
+                    // Тінь
+                    adelsonCtx.fillStyle = 'rgba(0,0,0,0.3)';
+                    adelsonCtx.beginPath();
+                    adelsonCtx.ellipse(offsetX + 5.5 * squareSize, offsetY + 2.3 * squareSize, 60, 75, 0.2, 0, Math.PI * 2);
+                    adelsonCtx.fill();
+                    
+                    // Циліндр
+                    const grad = adelsonCtx.createLinearGradient(
+                        offsetX + 4.5 * squareSize, offsetY + 1.5 * squareSize,
+                        offsetX + 5.5 * squareSize, offsetY + 3.5 * squareSize
+                    );
+                    grad.addColorStop(0, '#9a8a7a');
+                    grad.addColorStop(1, '#6a5a4a');
+                    adelsonCtx.fillStyle = grad;
+                    adelsonCtx.shadowColor = 'rgba(0,0,0,0.4)';
+                    adelsonCtx.shadowBlur = 12;
+                    
+                    adelsonCtx.beginPath();
+                    adelsonCtx.ellipse(offsetX + 5 * squareSize, offsetY + 1.6 * squareSize, 28, 14, 0, 0, Math.PI * 2);
+                    adelsonCtx.fill();
+                    adelsonCtx.fillRect(offsetX + 4.3 * squareSize, offsetY + 1.6 * squareSize, 48, 60);
+                    
+                    adelsonCtx.shadowBlur = 0;
+                    adelsonCtx.shadowColor = 'transparent';
+                }
+                
+                // Лінія-доказ
+                adelsonCtx.strokeStyle = '#ffffff';
+                adelsonCtx.lineWidth = 2;
+                adelsonCtx.setLineDash([6, 6]);
+                adelsonCtx.beginPath();
+                adelsonCtx.moveTo(offsetX + 2.5 * squareSize, offsetY + 2.5 * squareSize);
+                adelsonCtx.lineTo(offsetX + 4.5 * squareSize, offsetY + 3.5 * squareSize);
+                adelsonCtx.stroke();
+                adelsonCtx.setLineDash([]);
+            }
+            
+            // ========== ІЛЮЗІЯ МЮЛЛЕРА-ЛАЄРА ==========
+            const mullerCanvas = document.getElementById('muller-canvas');
+            const mullerCtx = mullerCanvas.getContext('2d');
+            let mullerAngle = 45;
+            
+            function drawMuller() {
+                const w = 400, h = 250;
+                mullerCanvas.width = w; mullerCanvas.height = h;
+                
+                mullerCtx.fillStyle = '#151a28';
+                mullerCtx.fillRect(0, 0, w, h);
+                
+                const lineLength = 200;
+                
+                // Верхня лінія — стрілки НАЗОВНІ (виглядає довшою)
+                const topY = h/3;
+                const topLeftX = (w - lineLength) / 2;
+                const topRightX = topLeftX + lineLength;
+                
+                mullerCtx.strokeStyle = '#e6c87c';
+                mullerCtx.lineWidth = 4;
+                mullerCtx.beginPath();
+                mullerCtx.moveTo(topLeftX, topY);
+                mullerCtx.lineTo(topRightX, topY);
+                mullerCtx.stroke();
+                
+                const angleRad = mullerAngle * Math.PI / 180;
+                const arrowLen = 30;
+                
+                mullerCtx.lineWidth = 3;
+                mullerCtx.beginPath();
+                mullerCtx.moveTo(topLeftX, topY);
+                mullerCtx.lineTo(topLeftX - Math.cos(angleRad) * arrowLen, topY - Math.sin(angleRad) * arrowLen);
+                mullerCtx.moveTo(topLeftX, topY);
+                mullerCtx.lineTo(topLeftX - Math.cos(angleRad) * arrowLen, topY + Math.sin(angleRad) * arrowLen);
+                mullerCtx.moveTo(topRightX, topY);
+                mullerCtx.lineTo(topRightX + Math.cos(angleRad) * arrowLen, topY - Math.sin(angleRad) * arrowLen);
+                mullerCtx.moveTo(topRightX, topY);
+                mullerCtx.lineTo(topRightX + Math.cos(angleRad) * arrowLen, topY + Math.sin(angleRad) * arrowLen);
+                mullerCtx.stroke();
+                
+                // Нижня лінія — стрілки ВСЕРЕДИНУ (виглядає коротшою)
+                const bottomY = 2*h/3;
+                const bottomLeftX = topLeftX;
+                const bottomRightX = topRightX;
+                
+                mullerCtx.beginPath();
+                mullerCtx.moveTo(bottomLeftX, bottomY);
+                mullerCtx.lineTo(bottomRightX, bottomY);
+                mullerCtx.stroke();
+                
+                mullerCtx.beginPath();
+                mullerCtx.moveTo(bottomLeftX, bottomY);
+                mullerCtx.lineTo(bottomLeftX + Math.cos(angleRad) * arrowLen, bottomY - Math.sin(angleRad) * arrowLen);
+                mullerCtx.moveTo(bottomLeftX, bottomY);
+                mullerCtx.lineTo(bottomLeftX + Math.cos(angleRad) * arrowLen, bottomY + Math.sin(angleRad) * arrowLen);
+                mullerCtx.moveTo(bottomRightX, bottomY);
+                mullerCtx.lineTo(bottomRightX - Math.cos(angleRad) * arrowLen, bottomY - Math.sin(angleRad) * arrowLen);
+                mullerCtx.moveTo(bottomRightX, bottomY);
+                mullerCtx.lineTo(bottomRightX - Math.cos(angleRad) * arrowLen, bottomY + Math.sin(angleRad) * arrowLen);
+                mullerCtx.stroke();
+                
+                // Позначки
+                mullerCtx.fillStyle = '#aab';
+                mullerCtx.font = '14px Arial';
+                mullerCtx.textAlign = 'center';
+                mullerCtx.fillText('← Обидві лінії однакової довжини →', w/2, h - 15);
+            }
+            
+            // ========== РУХОМА ІЛЮЗІЯ ==========
+            const motionCanvas = document.getElementById('motion-canvas');
+            const motionCtx = motionCanvas.getContext('2d');
+            let motionAngle = 0;
+            let motionPaused = false;
+            let motionContrast = 50;
+            
+            function drawMotion() {
+                const w = 400, h = 300;
+                motionCanvas.width = w; motionCanvas.height = h;
+                
+                motionCtx.fillStyle = '#0d0d15';
+                motionCtx.fillRect(0, 0, w, h);
+                
+                const rings = 10;
+                const segments = 30;
+                const centerX = w/2, centerY = h/2;
+                
+                const baseBright = 80;
+                const contrastBoost = (motionContrast - 50) * 1.5;
+                
+                for (let r = 0; r < rings; r++) {
+                    const radius = 20 + r * 16;
+                    for (let s = 0; s < segments; s++) {
+                        const angleOffset = (s / segments) * Math.PI * 2 + motionAngle * (r % 2 === 0 ? 1 : -1) * 0.4;
+                        const startAngle = angleOffset;
+                        const endAngle = angleOffset + Math.PI * 2 / segments * 0.75;
+                        
+                        const isEven = (r + s) % 2 === 0;
+                        let brightness;
+                        if (isEven) {
+                            brightness = baseBright + contrastBoost;
+                        } else {
+                            brightness = baseBright - contrastBoost;
+                        }
+                        brightness = Math.max(20, Math.min(220, brightness));
+                        
+                        const colorVal = Math.floor(brightness);
+                        motionCtx.fillStyle = `rgb(${colorVal + 30}, ${colorVal + 10}, ${colorVal + 50})`;
+                        
+                        motionCtx.beginPath();
+                        motionCtx.arc(centerX, centerY, radius, startAngle, endAngle);
+                        motionCtx.lineTo(centerX, centerY);
+                        motionCtx.closePath();
+                        motionCtx.fill();
+                    }
+                }
+                
+                // Фіксаційна точка
+                motionCtx.fillStyle = '#ff4444';
+                motionCtx.shadowColor = '#ff0000';
+                motionCtx.shadowBlur = 15;
+                motionCtx.beginPath();
+                motionCtx.arc(centerX, centerY, 6, 0, 2*Math.PI);
+                motionCtx.fill();
+                motionCtx.shadowBlur = 0;
+                motionCtx.fillStyle = '#ffffff';
+                motionCtx.beginPath();
+                motionCtx.arc(centerX, centerY, 3, 0, 2*Math.PI);
+                motionCtx.fill();
+                
+                if (!motionPaused) {
+                    motionAngle += 0.015;
+                }
+            }
+            
+            // ========== ІНІЦІАЛІЗАЦІЯ ==========
+            drawAdelson();
+            drawMuller();
+            
+            function animateMotion() {
+                drawMotion();
+                requestAnimationFrame(animateMotion);
+            }
+            animateMotion();
+            
+            // ========== ОБРОБНИКИ ПОДІЙ ==========
+            
+            // Інфо-панель
+            document.getElementById('info-tab').addEventListener('click', () => {
+                document.getElementById('info-panel').classList.toggle('open');
+            });
+            
+            // Адельсон
+            document.querySelector('.toggle-shadow-btn').addEventListener('click', (e) => {
+                adelsonShowShadow = !adelsonShowShadow;
+                e.target.textContent = adelsonShowShadow ? 'Сховати тінь' : 'Показати тінь';
+                drawAdelson();
+            });
+            
+            // Мюллер-Лаєр
+            document.getElementById('muller-angle').addEventListener('input', (e) => {
+                mullerAngle = parseInt(e.target.value);
+                document.getElementById('muller-angle-value').textContent = mullerAngle + '°';
+                drawMuller();
+            });
+            
+            document.querySelector('.reset-muller-btn').addEventListener('click', () => {
+                mullerAngle = 45;
+                document.getElementById('muller-angle').value = 45;
+                document.getElementById('muller-angle-value').textContent = '45°';
+                drawMuller();
+            });
+            
+            // Рухома
+            document.querySelector('.toggle-motion-btn').addEventListener('click', (e) => {
+                motionPaused = !motionPaused;
+                e.target.textContent = motionPaused ? 'Старт' : 'Пауза';
+            });
+            
+            document.getElementById('motion-contrast').addEventListener('input', (e) => {
+                motionContrast = parseInt(e.target.value);
+                document.getElementById('motion-contrast-value').textContent = motionContrast + '%';
+            });
+            
+        })();
+    </script>
+</body>
+</html>
