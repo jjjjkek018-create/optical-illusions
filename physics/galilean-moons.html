@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галілеєві супутники — Коливання на пружинах</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #020308;
+        }
+        
+        /* --- Інформаційна панель (згортається) --- */
+        #info-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 480px;
+            transform: translateX(-460px);
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #info-panel.open {
+            transform: translateX(0);
+        }
+        
+        #info-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 440px;
+            background: rgba(8, 10, 20, 0.92);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid #4a5070;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+            padding: 30px 25px;
+            overflow-y: auto;
+            pointer-events: auto;
+            color: #e8e0d0;
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+        
+        #info-content h2 {
+            margin: 0 0 20px;
+            color: #e6c87c;
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-size: 24px;
+            border-bottom: 1px solid #3a4060;
+            padding-bottom: 15px;
+        }
+        
+        #info-content h3 {
+            margin: 25px 0 10px;
+            color: #b8c8e0;
+            font-weight: 400;
+            font-size: 16px;
+        }
+        
+        #info-content p {
+            margin: 10px 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        #info-content .highlight {
+            color: #e6c87c;
+            font-weight: 600;
+        }
+        
+        #info-content .quote {
+            font-style: italic;
+            color: #b0c4de;
+            border-left: 2px solid #c9a84c;
+            padding-left: 18px;
+            margin: 18px 0;
+        }
+        
+        #info-content .note {
+            margin-top: 25px;
+            font-size: 13px;
+            opacity: 0.7;
+            border-top: 1px solid #3a4060;
+            padding-top: 15px;
+        }
+        
+        /* Вкладка для відкриття */
+        #info-tab {
+            position: absolute;
+            top: 50%;
+            right: -40px;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 120px;
+            background: rgba(8, 10, 20, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid #4a5070;
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            color: #e6c87c;
+            font-size: 18px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 4px;
+            transition: background 0.2s;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        #info-tab:hover {
+            background: rgba(30, 35, 55, 0.9);
+            color: #f0d48c;
+        }
+        
+        #info-panel.open #info-tab {
+            right: -40px;
+        }
+        
+        /* --- Кнопка графіка --- */
+        #graph-button {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(10, 12, 24, 0.8);
+            backdrop-filter: blur(8px);
+            color: #e6c87c;
+            border: 1px solid #5a6080;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 50;
+            pointer-events: auto;
+            transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #graph-button:hover {
+            background: rgba(30, 35, 55, 0.9);
+            border-color: #c9a84c;
+        }
+        
+        /* --- Сторінка графіка (окрема) --- */
+        #graph-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(2, 3, 8, 0.98);
+            backdrop-filter: blur(15px);
+            z-index: 200;
+            display: none;
+            pointer-events: auto;
+        }
+        
+        #graph-page.open {
+            display: block;
+        }
+        
+        #graph-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(8, 10, 20, 0.7);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #3a4060;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
+        
+        #graph-header h2 {
+            color: #e6c87c;
+            font-weight: 400;
+            font-size: 22px;
+            margin: 0;
+        }
+        
+        #close-graph {
+            background: none;
+            border: 1px solid #5a6080;
+            color: #ccd;
+            font-size: 16px;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        #close-graph:hover {
+            background: #3a4060;
+            color: white;
+            border-color: #c9a84c;
+        }
+        
+        #large-canvas-container {
+            position: absolute;
+            top: 100px;
+            left: 40px;
+            right: 40px;
+            bottom: 40px;
+            background: rgba(5, 7, 15, 0.6);
+            border-radius: 20px;
+            border: 1px solid #4a5070;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        
+        #large-graph-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        #graph-legend-large {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 40px;
+            background: rgba(8, 10, 20, 0.7);
+            padding: 12px 30px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid #4a5070;
+        }
+        
+        .legend-item-large {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ccd;
+            font-size: 14px;
+        }
+        
+        .legend-color-large {
+            width: 24px;
+            height: 4px;
+            border-radius: 4px;
+        }
+        
+        /* --- Панель керування --- */
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 12, 24, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 16px 30px;
+            border-radius: 50px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            z-index: 20;
+            border: 1px solid #4a5070;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            pointer-events: auto;
+        }
+        
+        #controls label {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        #controls input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #c9a84c;
+        }
+        
+        #controls button {
+            background: #2a3045;
+            color: #ddd;
+            border: 1px solid #5a6080;
+            padding: 8px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        
+        #controls button:hover {
+            background: #3a4060;
+            color: white;
+        }
+        
+        #controls button.primary {
+            background: #c9a84c;
+            border-color: #e6c87c;
+            color: #111;
+        }
+        
+        #controls button.primary:hover {
+            background: #dbb85a;
+        }
+        
+        #status {
+            position: absolute;
+            bottom: 100px;
+            left: 25px;
+            color: #aab;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            pointer-events: none;
+            backdrop-filter: blur(2px);
+            z-index: 15;
+        }
+        
+        #view-hint {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ccd;
+            background: rgba(10,10,20,0.5);
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            border: 1px solid #c9a84c;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            text-align: center;
+            z-index: 15;
+        }
+        
+        #time-display {
+            position: absolute;
+            bottom: 100px;
+            right: 25px;
+            color: #c9a84c;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            pointer-events: none;
+            backdrop-filter: blur(2px);
+            font-family: monospace;
+            z-index: 15;
+        }
+    </style>
+</head>
+<body>
+    <!-- Інформаційна панель, що згортається -->
+    <div id="info-panel">
+        <div id="info-content">
+            <h2>1610 рік: Галілей спостерігає Юпітер</h2>
+            <p>Коли Галілей спрямував свій телескоп на Юпітер, він побачив чотири яскраві цятки, що рухалися вздовж планети. Його нічні замальовки показували, як ці об'єкти коливаються вперед-назад, <span class="highlight">немов прикріплені до планети невидимими пружинами</span>.</p>
+            <p class="quote">"Побудувавши графік їхнього руху в часі, ми отримаємо синусоїду — точнісінько таку саму, як коливання тягарця на пружині з лінійною відновлювальною силою."</p>
+            <p>Цей рух <span class="highlight">математично ідентичний</span> механічним коливанням. З нашої пласкої проєкції неба колові орбіти виглядають як лінійні коливання вздовж однієї осі.</p>
+            <h3>Дві моделі — одна реальність</h3>
+            <p>Не стверджується, що супутники справді на пружинах. Але це <span class="highlight">справедлива математична модель</span> при спостереженні з відстані. Вона дає такі ж прогнози, як і гравітаційна модель, і ці моделі можна математично перетворити одну в іншу.</p>
+            <p>Подібно до того, як снаряди чи бурі на Землі відчувають силу Коріоліса, але з космосу рухаються прямолінійно; або як квантові явища можна описати трьома різними математичними моделями, що дають однакові прогнози — жодна з них не є остаточно "правильною". Математичні моделі лише дають нам інтуїтивне розуміння.</p>
+            <p class="note">Ліворуч у 3D: реальні колові орбіти.<br>Праворуч при вигляді збоку: проєкція на площину — коливання.</p>
+        </div>
+        <div id="info-tab">І Н Ф О</div>
+    </div>
+
+    <!-- Кнопка відкриття графіка -->
+    <div id="graph-button">
+        <span>📈</span> Відкрити графік руху
+    </div>
+
+    <!-- Окрема сторінка з великим графіком -->
+    <div id="graph-page">
+        <div id="graph-header">
+            <h2>Графік: положення супутників по осі X від часу</h2>
+            <button id="close-graph">Закрити</button>
+        </div>
+        <div id="large-canvas-container">
+            <canvas id="large-graph-canvas" width="1200" height="600"></canvas>
+        </div>
+        <div id="graph-legend-large">
+            <div class="legend-item-large"><span class="legend-color-large" style="background: #ffcc88;"></span> Іо</div>
+            <div class="legend-item-large"><span class="legend-color-large" style="background: #aaccdd;"></span> Європа</div>
+            <div class="legend-item-large"><span class="legend-color-large" style="background: #ccbbaa;"></span> Ганімед</div>
+            <div class="legend-item-large"><span class="legend-color-large" style="background: #998877;"></span> Каллісто</div>
+        </div>
+    </div>
+    
+    <div id="view-hint">
+        <strong>Обертайте камеру</strong> — згори видно справжні орбіти, збоку — коливання на "пружинах"
+    </div>
+    
+    <div id="status">
+        <span id="view-angle-indicator">Поточний ракурс: збоку (проєкція)</span>
+    </div>
+    
+    <div id="time-display">
+        <span id="time-value">Час: 0.0 с</span>
+    </div>
+
+    <div id="controls">
+        <label>
+            <input type="checkbox" id="show-springs" checked> Пружини
+        </label>
+        <label>
+            <input type="checkbox" id="show-trails" checked> Сліди
+        </label>
+        <button id="view-top">Згори</button>
+        <button id="view-side" class="primary">Збоку</button>
+        <button id="toggle-pause">Пауза</button>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // --- Налаштування сцени ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020308);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.body.appendChild(renderer.domElement);
+
+        const cssRenderer = new CSS2DRenderer();
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.domElement.style.position = 'absolute';
+        cssRenderer.domElement.style.top = '0';
+        cssRenderer.domElement.style.left = '0';
+        cssRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(cssRenderer.domElement);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 2, 18);
+        camera.lookAt(0, 0, 0);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        // --- Освітлення ---
+        scene.add(new THREE.AmbientLight(0x202030, 0.5));
+        const sunLight = new THREE.PointLight(0xffeedd, 1.5);
+        sunLight.position.set(0, 0, 0);
+        scene.add(sunLight);
+        scene.add(new THREE.PointLight(0x446688, 0.8)).position.set(5, 8, 5);
+        scene.add(new THREE.PointLight(0x885544, 0.6)).position.set(-5, 3, -5);
+        scene.add(new THREE.PointLight(0x6688aa, 0.4)).position.set(-3, 2, -10);
+
+        // --- Зорі ---
+        const starsGeo = new THREE.BufferGeometry();
+        const starsPos = new Float32Array(2000 * 3);
+        for (let i = 0; i < 2000 * 3; i += 3) {
+            const r = 50 + Math.random() * 100;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            starsPos[i] = Math.sin(phi) * Math.cos(theta) * r;
+            starsPos[i+1] = Math.sin(phi) * Math.sin(theta) * r;
+            starsPos[i+2] = Math.cos(phi) * r;
+        }
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+        const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.15}));
+        scene.add(stars);
+
+        // --- Юпітер ---
+        const jupiter = new THREE.Mesh(
+            new THREE.SphereGeometry(1.8, 64, 32),
+            new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 0.7, emissive: new THREE.Color(0x332211), emissiveIntensity: 0.3 })
+        );
+        scene.add(jupiter);
+        
+        const bandMat = new THREE.MeshStandardMaterial({ color: 0xbc9a6c, transparent: true, opacity: 0.4 });
+        for (let i = -1; i <= 1; i+=0.5) {
+            const band = new THREE.Mesh(new THREE.TorusGeometry(1.82, 0.05, 8, 64), bandMat);
+            band.rotation.x = Math.PI / 2;
+            band.rotation.z = i * 0.3;
+            band.position.y = i * 0.6;
+            scene.add(band);
+        }
+
+        // --- Супутники ---
+        const moons = [
+            { name: 'Іо',       radius: 3.2, speed: 0.8,  color: 0xffcc88, size: 0.28, inclination: 0.05 },
+            { name: 'Європа',   radius: 4.5, speed: 0.5,  color: 0xaaccdd, size: 0.26, inclination: 0.1 },
+            { name: 'Ганімед',  radius: 6.0, speed: 0.35, color: 0xccbbaa, size: 0.32, inclination: 0.15 },
+            { name: 'Каллісто', radius: 8.0, speed: 0.2,  color: 0x998877, size: 0.30, inclination: 0.08 }
+        ];
+
+        const moonMeshes = [];
+        const moonAngles = moons.map(() => Math.random() * Math.PI * 2);
+        const trailPoints = moons.map(() => []);
+        const springLines = [];
+        
+        let showSprings = true;
+        let showTrails = true;
+        let paused = false;
+        let simulationTime = 0;
+        
+        const graphHistory = moons.map(() => []);
+        const maxGraphPoints = 400;
+
+        moons.forEach((moon, i) => {
+            const mesh = new THREE.Mesh(
+                new THREE.SphereGeometry(moon.size, 24, 16),
+                new THREE.MeshStandardMaterial({ color: moon.color, roughness: 0.4 })
+            );
+            scene.add(mesh);
+            moonMeshes.push(mesh);
+            
+            const line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0)]),
+                new THREE.LineBasicMaterial({ color: 0x88aacc })
+            );
+            scene.add(line);
+            springLines.push(line);
+            
+            const div = document.createElement('div');
+            div.textContent = moon.name;
+            div.style.color = '#e6c87c';
+            div.style.fontSize = '14px';
+            div.style.fontWeight = 'bold';
+            div.style.textShadow = '1px 1px 3px black';
+            div.style.background = 'rgba(20,20,30,0.7)';
+            div.style.padding = '2px 10px';
+            div.style.borderRadius = '20px';
+            div.style.border = '1px solid #c9a84c';
+            div.style.pointerEvents = 'none';
+            const label = new CSS2DObject(div);
+            mesh.add(label);
+            label.position.y = 0.5;
+        });
+
+        // Вісь та орбіти
+        scene.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -5, 0), new THREE.Vector3(0, 5, 0)]),
+            new THREE.LineBasicMaterial({ color: 0x445566 })
+        ));
+        
+        moons.forEach(moon => {
+            const points = [];
+            for (let i = 0; i <= 64; i++) {
+                const a = (i / 64) * Math.PI * 2;
+                points.push(new THREE.Vector3(Math.cos(a) * moon.radius, 0, Math.sin(a) * moon.radius));
+            }
+            scene.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(points),
+                new THREE.LineBasicMaterial({ color: 0x446688 })
+            ));
+        });
+
+        // --- Графік (великий canvas) ---
+        const largeCanvas = document.getElementById('large-graph-canvas');
+        const largeCtx = largeCanvas.getContext('2d');
+        
+        function drawLargeGraph() {
+            const w = largeCanvas.width;
+            const h = largeCanvas.height;
+            
+            largeCtx.clearRect(0, 0, w, h);
+            
+            // Сітка
+            largeCtx.strokeStyle = '#2a3a50';
+            largeCtx.lineWidth = 0.5;
+            for (let i = 0; i <= 8; i++) {
+                const y = 40 + (i / 8) * (h - 80);
+                largeCtx.beginPath();
+                largeCtx.moveTo(60, y);
+                largeCtx.lineTo(w - 40, y);
+                largeCtx.stroke();
+            }
+            for (let i = 0; i <= 10; i++) {
+                const x = 60 + (i / 10) * (w - 100);
+                largeCtx.beginPath();
+                largeCtx.moveTo(x, 40);
+                largeCtx.lineTo(x, h - 40);
+                largeCtx.stroke();
+            }
+            
+            // Осі
+            largeCtx.strokeStyle = '#6688aa';
+            largeCtx.lineWidth = 2;
+            largeCtx.beginPath();
+            largeCtx.moveTo(60, h/2);
+            largeCtx.lineTo(w - 40, h/2);
+            largeCtx.stroke();
+            largeCtx.beginPath();
+            largeCtx.moveTo(60, 40);
+            largeCtx.lineTo(60, h - 40);
+            largeCtx.stroke();
+            
+            // Підписи
+            largeCtx.fillStyle = '#aab';
+            largeCtx.font = '14px monospace';
+            largeCtx.textAlign = 'right';
+            largeCtx.fillText('Час →', w - 50, h/2 - 10);
+            largeCtx.fillText('← Положення X →', 200, 30);
+            
+            // Криві
+            moons.forEach((moon, idx) => {
+                if (graphHistory[idx].length < 2) return;
+                
+                const color = '#' + moon.color.toString(16).padStart(6, '0');
+                largeCtx.strokeStyle = color;
+                largeCtx.lineWidth = 2.5;
+                
+                largeCtx.beginPath();
+                graphHistory[idx].forEach((point, i) => {
+                    const canvasX = 60 + (point.x / 100) * (w - 100);
+                    const canvasY = h/2 - point.y * (h - 100) / 20;
+                    
+                    if (i === 0) largeCtx.moveTo(canvasX, canvasY);
+                    else largeCtx.lineTo(canvasX, canvasY);
+                });
+                largeCtx.stroke();
+            });
+            
+            // Поточна лінія
+            if (graphHistory[0].length > 0) {
+                const lastTime = graphHistory[0][graphHistory[0].length - 1].x;
+                const canvasX = 60 + (lastTime / 100) * (w - 100);
+                largeCtx.strokeStyle = '#c9a84c';
+                largeCtx.lineWidth = 1.5;
+                largeCtx.setLineDash([6, 6]);
+                largeCtx.beginPath();
+                largeCtx.moveTo(canvasX, 40);
+                largeCtx.lineTo(canvasX, h - 40);
+                largeCtx.stroke();
+                largeCtx.setLineDash([]);
+            }
+        }
+
+        // --- Оновлення ---
+        function updateMoons(deltaTime) {
+            if (!paused) {
+                simulationTime += deltaTime;
+                document.getElementById('time-value').textContent = `Час: ${simulationTime.toFixed(1)} с`;
+            }
+            
+            const timeScale = deltaTime * 0.5;
+            
+            moonMeshes.forEach((mesh, i) => {
+                const moon = moons[i];
+                if (!paused) moonAngles[i] += moon.speed * timeScale;
+                
+                const x = Math.cos(moonAngles[i]) * moon.radius;
+                const z = Math.sin(moonAngles[i]) * moon.radius * Math.cos(moon.inclination);
+                const y = Math.sin(moonAngles[i]) * moon.radius * Math.sin(moon.inclination);
+                
+                mesh.position.set(x, y, z);
+                
+                if (showSprings) {
+                    springLines[i].geometry.dispose();
+                    springLines[i].geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), mesh.position.clone()]);
+                }
+                
+                if (!paused) {
+                    graphHistory[i].push({ x: (simulationTime * 10) % 100, y: x });
+                    if (graphHistory[i].length > maxGraphPoints) graphHistory[i].shift();
+                }
+            });
+            
+            if (!paused && graphHistory[0].length > 0 && graphHistory[0][graphHistory[0].length-1].x > 95) {
+                graphHistory.forEach(arr => arr.length = 0);
+                simulationTime = 0;
+            }
+            
+            springLines.forEach(l => l.visible = showSprings);
+            drawLargeGraph();
+        }
+
+        function updateStatusText() {
+            const camPos = camera.position;
+            const angleFromTop = Math.abs(camPos.y) / camPos.length();
+            document.getElementById('view-angle-indicator').textContent = 
+                angleFromTop > 0.7 ? 'Поточний ракурс: згори (колові орбіти)' : 'Поточний ракурс: збоку (коливання на "пружинах")';
+        }
+
+        // --- Інтерфейс ---
+        document.getElementById('info-tab').addEventListener('click', () => {
+            document.getElementById('info-panel').classList.toggle('open');
+        });
+        
+        document.getElementById('graph-button').addEventListener('click', () => {
+            document.getElementById('graph-page').classList.add('open');
+        });
+        
+        document.getElementById('close-graph').addEventListener('click', () => {
+            document.getElementById('graph-page').classList.remove('open');
+        });
+        
+        document.getElementById('show-springs').addEventListener('change', e => showSprings = e.target.checked);
+        document.getElementById('show-trails').addEventListener('change', e => showTrails = e.target.checked);
+        
+        document.getElementById('view-top').addEventListener('click', () => {
+            camera.position.set(0, 14, 0.1);
+            controls.target.set(0, 0, 0);
+            controls.update();
+            updateStatusText();
+        });
+        
+        document.getElementById('view-side').addEventListener('click', () => {
+            camera.position.set(0, 2, 18);
+            controls.target.set(0, 0, 0);
+            controls.update();
+            updateStatusText();
+        });
+        
+        document.getElementById('toggle-pause').addEventListener('click', e => {
+            paused = !paused;
+            e.target.textContent = paused ? 'Продовжити' : 'Пауза';
+        });
+
+        // --- Анімація ---
+        const clock = new THREE.Clock();
+        
+        function animate() {
+            const deltaTime = clock.getDelta();
+            updateMoons(deltaTime);
+            stars.rotation.y += 0.0005;
+            controls.update();
+            updateStatusText();
+            
+            renderer.render(scene, camera);
+            cssRenderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
